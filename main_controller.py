@@ -1,5 +1,4 @@
 import os
-import logging_module
 import time
 from word_detector import setup_keyword_detection, set_message_handler
 from audio_recorder import start_recording, stop_recording
@@ -21,8 +20,7 @@ last_thread_id = None
 last_interaction_time = None
 
 def handle_detected_words(words):
-    global is_recording, picture_mode, last_thread_id, last_interaction_time, log_file_path
-    logging_module.write_log('handle_detected_words function started.', log_file_path)
+    global is_recording, picture_mode, last_thread_id, last_interaction_time
     detected_phrase = ' '.join(words).lower().strip()
     print(f"Detected phrase: {detected_phrase}")
 
@@ -38,13 +36,11 @@ def handle_detected_words(words):
         is_recording = False
         print("Recording stopped. Processing...")
         process_recording()
-    logging_module.write_log('handle_detected_words function ended.', log_file_path)
 
 def process_recording():
-    global picture_mode, last_thread_id, last_interaction_time, log_file_path
-    logging_module.write_log('process_recording function started.', log_file_path)
+    global picture_mode, last_thread_id, last_interaction_time
     transcription = assemblyai_transcriber.transcribe_audio_file("recorded_audio.wav")
-    logging_module.write_log(f"Transcription result: '{transcription}'", log_file_path)
+    print(f"Transcription result: '{transcription}'")
 
     if picture_mode:
         vision_module.capture_image_async()
@@ -60,18 +56,16 @@ def process_recording():
 
 
 def interact_with_assistant(transcription):
-    global last_thread_id, last_interaction_time, log_file_path
-    logging_module.write_log('interact_with_assistant function started.', log_file_path)
+    global last_thread_id, last_interaction_time
     if not last_thread_id or time.time() - last_interaction_time > 90:
         last_thread_id = assistant_manager.create_thread()
 
     last_interaction_time = time.time()
 
     message_id = assistant_manager.add_message_to_thread(last_thread_id, transcription)
-    logging_module.write_log(f"Message added with ID: {message_id}", log_file_path)
+    print(f"Message added with ID: {message_id}")
     # Initiate a run on the thread for the assistant to process the message
     run_id = assistant_manager.run_assistant(last_thread_id, assistant_id="asst_3D8tACoidstqhbw5JE2Et2st", instructions=transcription)
-    logging_module.write_log(f"Assistant run initiated with ID: {run_id}", log_file_path)
     print(f"Assistant run initiated with ID: {run_id}")
 
     # Check if the run is completed and retrieve the processed response
@@ -88,8 +82,6 @@ def interact_with_assistant(transcription):
 
 
 def initialize():
-    log_file_path = logging_module.create_log_file()
-    logging_module.write_log('initialize function started.', log_file_path)
     print("System initializing...")
     set_message_handler(handle_detected_words)
     setup_keyword_detection()
