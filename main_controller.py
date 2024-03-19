@@ -76,6 +76,7 @@ def interact_with_assistant(transcription):
         processed_response = response.content[0].text.value
         eleven_labs_manager.play_text(processed_response)
         print(f"Played back the assistant's response: {processed_response}")
+        logger.info(f"Played back the assistant's response: {processed_response}")
     else:
         print("Assistant processing failed or timed out.")
 
